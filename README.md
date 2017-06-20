@@ -1,0 +1,1 @@
+# size-facet-sku-mapper
