@@ -1,7 +1,8 @@
 # Size Facet Categories Service
-This service is purposed to outline the process of compiling the size facets mappings for products based on the size facet query from the oracle tools DB into excel sheets that will be utilized as a cache.
+This Application is a built on top of the service provided under https://github.com/islammenshawy/size-facet_categories 
 
-The service will use product style (First 6 digits of any product from the brand website) and size model (Available in the product feed) to compile the valid size facet categories for a specific style by mapping this information on the SKU level. Each in stock SKU will have 2 dimensions and each dimension maps to a SFC that will be represented by a breadcrumb.
+The mapper will utilize the product feed to generate another file that will contain the size facets mapping with SKU to ease 
+the mapping of the SFCs to SKU records
 
 ## Getting Started
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. Also the service is deployed cloud foundry to help test products.
@@ -9,15 +10,20 @@ These instructions will get you a copy of the project up and running on your loc
 ### Prerequisites for running in local
 ```
 install node v6.10.3
-run using command: node index.js
+run using command: node index.js ${FileName}
 ```
-### Hitting service end points
-In Local you can use the below urls to compile the size codes for a style.
+### Output files and format
+The application will generate 2 files one with the SKUs that got mapped that are inventory available with [_SFCs] in the name and 
+another file with the SKUs that didn't get mapped with name ending with [_SFCs_Non]
 
-* All size facets for a style: http://localhost:8080/sizefacets?pid=${productStyle}&szmodel=${sizeModel}
-* Filter only sfc breadcrumbs: http://localhost:8080/sizefacets/breadcrumbs?pid=${productStyle}&szmodel=${sizeModel}
+The non mapped SKUs are not associated with any SFCs and for testing purpose on search page
 
-### Examples from the cloud instance
-* http://sfc-validator.cfapps.io/sizefacets?pid=604325&szmodel=M38
-* http://sfc-validator.cfapps.io/sizefacets/breadcrumbs?pid=604325&szmodel=M38
+Header information:
+SKU|WebModel|Dimension|Variance|size1|size2|Dimension|
+
+### Examples run with sample file
+```
+node index.js on_us_ol_fullText
+
+```
 
