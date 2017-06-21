@@ -114,10 +114,25 @@ function createStyleSKUsMappingRecords(styleRecords, outputFile, errorOutputFile
     }
     else{
       styleRecords.forEach(function(record) {
-        var attributes = record.split('|');
-        var sizeModel = attributes[0] == 'SC' ? attributes[sizeModelIndex] : '';
-        //Print record header and business id: EX: ST:0123
-         //errorOutputFile.write(attributes[0] + '|' + attributes[1] + '|' + attributes[3] + '|' + sizeModel + '\n');
+        if(record.startsWith('ST')){
+          var attributes = record.split('|');
+          //Validate product tags till you finalize the bug for product tags.
+          //var productStyle = attributes[1];
+          // var productTags = mappings.getProductTags(productStyle);
+          // if(productTags !== undefined && productTags['ProductTags'] !== undefined){
+          //   var DepartmentTags = productTags['ProductTags']['DepartmentTags'];
+          //   var productTypeTags = productTags['ProductTags']['ProductTypeTags'];
+          //   var categoryTags = productTags['ProductTags']['CategoryTags'];
+          //
+          //   if(!mappings.isJsonArray(DepartmentTags) && !mappings.isJsonArray(productTypeTags)
+          //       && !mappings.isJsonArray(categoryTags)){
+          //         //var sizeModel = attributes[0] == 'SC' ? attributes[sizeModelIndex] : '';
+          //         //Print record header and business id: EX: ST:0123
+          //         errorOutputFile.write(attributes[0] + '|' + attributes[1] + '|' + attributes[3] + '\n');
+          //   }
+          // }
+          errorOutputFile.write(attributes[0] + '|' + attributes[1] + '|' + attributes[3] + '\n');
+        }
        });
     }
   }

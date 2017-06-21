@@ -1,9 +1,18 @@
 "use strict";
 var Excel = require('exceljs');
 var request = require('sync-request');
+var request = require('sync-request');
 var sfcfilename = __dirname + "/size_facet_categories.xlsx";
 var szModelfilename = __dirname + "/size_model_facets_mappings.xlsx"
 var i = 1
+
+/**
+** Function to hit product tags API and get the response for a product
+**/
+var getProductTags = function(productIdVar){
+  var res = request('GET', 'http://oldnavy.gap.com/resources/productTags/v1/' + productIdVar);
+  return JSON.parse(res.getBody());
+}
 
 /**
 * Function to check if element is json array
@@ -43,8 +52,6 @@ var getProductSfcs = function(tagsJson, sizeModel, skus, tagsCache, sizeModelCac
     return;
   }
 
-  var results = [];
-  var handledSizeModels = {};
   var validSfcs = [];
 
   //Make Tags Json object into array
@@ -77,26 +84,37 @@ var getProductSfcs = function(tagsJson, sizeModel, skus, tagsCache, sizeModelCac
   }
 
   var sizeModels = sizeModelCache[sizeModel];
+  var skusSizeDimensionPair = {};
+  //Flag handled skus so you don't process them again, this will ensure that picking first SFC in the list
+  //of SFCs per dimension with same sort order in the sheet.
+  var handledSizeModels = {};
+
   for(var sizeModel of sizeModels){
     var currentSizeCode = sizeModel['sizeCode'];
     var currentSfcId = sizeModel['sfcId'];
     var currentDimension = sizeModel['dimension'];
-    var isHandled = {};
 
     for(var skupair of skus){
       if(skupair[currentSizeCode] !== undefined
               && validSfcsMap[currentSfcId] !== undefined
                   && !handledSizeModels[skupair[currentSizeCode] + '_' + currentDimension]){
-        results.push(skupair[currentSizeCode] + sizeModel['sizeFacetBreadCrumb']);
+        var skuDimensionBreadCrumb = '|' + skupair[currentSizeCode] + sizeModel['sizeFacetBreadCrumb'];
+
+        var skuSizeDimPair = [];
+        if(skusSizeDimensionPair[skupair[currentSizeCode]] !== undefined){
+           skuSizeDimPair = skusSizeDimensionPair[skupair[currentSizeCode]];
+        }
+        skuSizeDimPair.push(skuDimensionBreadCrumb);
+        skusSizeDimensionPair[skupair[currentSizeCode]] = skuSizeDimPair;
         handledSizeModels[skupair[currentSizeCode] + '_' + currentDimension] = true;
       }
     }
-
-    if(!isHandled){
-      //console.error('Can\'t find mapping for Size Code: ' + currentSizeCode);
-    }
   }
 
+  var results = [];
+  for(var i in skusSizeDimensionPair){
+    results.push(skusSizeDimensionPair[i]);
+  }
   return results;
 }
 
@@ -140,6 +158,9 @@ var loadSfcsCache = function(workbook, workbook2, sfcacheCallback, szmodelCacheC
     });
 };
 
+/**
+* Build size model key for size model cache
+**/
 function buildSizeModelKey(sizeModel){
   return sizeModel;
 }
@@ -214,4 +235,4 @@ function buildSizeFacetBreadCrumb(row){
       return key;
     };
 
-module.exports = {loadSfcsCache, loadSzModelSzCodeFctsCache, getProductSfcs};
+module.exports = {loadSfcsCache, loadSzModelSzCodeFctsCache, getProductSfcs, getProductTags, isJsonArray};
